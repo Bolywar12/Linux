@@ -1,2 +1,2 @@
 - yangi
- - #salom
+ - # salom
