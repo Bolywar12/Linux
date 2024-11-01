@@ -1,3 +1,4 @@
+```python
 import difflib
 import json
 import fitz  # PyMuPDF for handling PDF files
@@ -125,3 +126,4 @@ if __name__ == "__main__":
     viewer = DiffViewer()
     viewer.show()
     sys.exit(app.exec_())
+```
