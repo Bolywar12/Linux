@@ -1,6 +1,6 @@
 import difflib
 import json
-import fitz  # PyMuPDF
+import fitz  # PyMuPDF for handling PDF files
 import subprocess
 import pypandoc
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QLabel, QFileDialog
@@ -10,8 +10,8 @@ import pandas as pd
 import sys
 
 class DiffViewer(QWidget):
-    def init(self):
-        super().init()
+    def __init__(self):
+        super().__init__()
         self.text1 = ""
         self.text2 = ""
 
@@ -79,3 +79,49 @@ class DiffViewer(QWidget):
         if file2:
             self.text2 = self.extract_text_from_file(file2)
             self.text_input2.setPlainText(self.text2)  # Display the content in the second text area
+
+    def extract_text_from_file(self, filepath):
+        # Handle different file types, including Markdown
+        if filepath.endswith(".md"):
+            # Convert Markdown to plain text for comparison
+            return pypandoc.convert_file(filepath, 'plain', format='md')
+        elif filepath.endswith(".pdf"):
+            # PDF handling using PyMuPDF
+            doc = fitz.open(filepath)
+            text = ""
+            for page in doc:
+                text += page.get_text()
+            return text
+        elif filepath.endswith(".docx"):
+            # DOCX handling using python-docx
+            doc = Document(filepath)
+            return "\n".join([p.text for p in doc.paragraphs])
+        elif filepath.endswith(".html"):
+            # HTML handling using BeautifulSoup
+            with open(filepath, 'r', encoding='utf-8') as f:
+                soup = BeautifulSoup(f, 'html.parser')
+                return soup.get_text()
+        else:
+            # Plain text
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
+
+    def show_diff(self):
+        # Get texts from inputs
+        text1 = self.text_input1.toPlainText()
+        text2 = self.text_input2.toPlainText()
+
+        # Generate diff
+        diff = difflib.HtmlDiff().make_file(
+            text1.splitlines(), text2.splitlines(), context=True, numlines=2
+        )
+
+        # Display diff in HTML format
+        self.diff_view.setHtml(diff)
+
+# Application initialization
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    viewer = DiffViewer()
+    viewer.show()
+    sys.exit(app.exec_())
