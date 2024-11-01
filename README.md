@@ -1,129 +1,104 @@
-```python
-import difflib
-import json
-import fitz  # PyMuPDF for handling PDF files
-import subprocess
-import pypandoc
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QLabel, QFileDialog
-from docx import Document
-from bs4 import BeautifulSoup
-import pandas as pd
-import sys
+import os
+import base64
+import requests
+from dotenv import load_dotenv
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-class DiffViewer(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.text1 = ""
-        self.text2 = ""
+# Load environment variables from .env file
+load_dotenv()
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
+REPO_NAME = os.getenv("REPO_NAME")
 
-        self.initUI()
+# Check if necessary tokens are available
+if not all([TELEGRAM_BOT_TOKEN, GITHUB_TOKEN, GITHUB_USERNAME, REPO_NAME]):
+    raise ValueError("Missing one or more environment variables.")
 
-    def initUI(self):
-        # Main layout
-        main_layout = QVBoxLayout()
+# GitHub request function with error handling
+def github_request(method, url, data=None):
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    try:
+        response = requests.request(method, url, headers=headers, json=data)
+        response.raise_for_status()
+        return response
+    except requests.exceptions.RequestException as e:
+        print(f"GitHub API request error: {e}")
+        return None
 
-        # Instructions label
-        label = QLabel("Yashil matn qo‘shildi degani, qizil matn esa olib tashlandi degani va qora matn o‘zgarmadi degani.")
-        main_layout.addWidget(label)
+# Function to create a new file
+def create_file(filename, content):
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{filename}'
+    content_base64 = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+    data = {
+        "message": f"Create {filename}",
+        "content": content_base64
+    }
+    response = github_request("PUT", url, data)
+    return response and response.status_code in [200, 201]
 
-        # Horizontal layout for split text entry (left and right side)
-        text_entry_layout = QHBoxLayout()
-        
-        # Left side (First text input)
-        self.text_input1 = QTextEdit()
-        self.text_input1.setPlaceholderText("Birinchi matnni shu yerga kiriting...")
-        text_entry_layout.addWidget(self.text_input1)
-
-        # Right side (Second text input)
-        self.text_input2 = QTextEdit()
-        self.text_input2.setPlaceholderText("Ikkinchi matnni shu yerga kiriting...")
-        text_entry_layout.addWidget(self.text_input2)
-
-        # Add the split text entry layout to main layout
-        main_layout.addLayout(text_entry_layout)
-
-        # Button layout
-        button_layout = QHBoxLayout()
-
-        # Button to load files
-        btn_load_files = QPushButton("Faylni yuklash")
-        btn_load_files.clicked.connect(self.load_files)
-        button_layout.addWidget(btn_load_files)
-
-        # Button to generate the diff
-        btn_generate_diff = QPushButton("Farqni ko'rsatish")
-        btn_generate_diff.clicked.connect(self.show_diff)
-        button_layout.addWidget(btn_generate_diff)
-
-        # Add buttons to the main layout
-        main_layout.addLayout(button_layout)
-
-        # TextEdit for displaying the diff
-        self.diff_view = QTextEdit()
-        self.diff_view.setReadOnly(True)
-        main_layout.addWidget(self.diff_view)
-
-        # Set up the main window
-        self.setLayout(main_layout)
-        self.setWindowTitle("Matnni farqlash oynasi")
-        self.resize(800, 600)
+# Function to edit a file
+def edit_file(filename, new_content):
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{filename}'
+    response = github_request("GET", url)
+    if not response or response.status_code != 200:
+        return False
     
-    def load_files(self):
-        # Load the first file
-        file1, _ = QFileDialog.getOpenFileName(self, "Birinchi faylni tanlang")
-        if file1:
-            self.text1 = self.extract_text_from_file(file1)
-            self.text_input1.setPlainText(self.text1)  # Display the content in the first text area
+    sha = response.json().get('sha')
+    content_base64 = base64.b64encode(new_content.encode("utf-8")).decode("utf-8")
+    data = {
+        "message": f"Update {filename}",
+        "content": content_base64,
+        "sha": sha
+    }
+    update_response = github_request("PUT", url, data)
+    return update_response and update_response.status_code in [200, 201]
 
-        # Load the second file
-        file2, _ = QFileDialog.getOpenFileName(self, "Ikkinchi faylni tanlang")
-        if file2:
-            self.text2 = self.extract_text_from_file(file2)
-            self.text_input2.setPlainText(self.text2)  # Display the content in the second text area
+# Function to view file content
+def view_file(filename):
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{filename}'
+    response = github_request("GET", url)
+    if response and response.status_code == 200:
+        content_base64 = response.json().get('content')
+        content = base64.b64decode(content_base64).decode("utf-8")
+        return content
+    else:
+        return None
 
-    def extract_text_from_file(self, filepath):
-        # Handle different file types, including Markdown
-        if filepath.endswith(".md"):
-            # Convert Markdown to plain text for comparison
-            return pypandoc.convert_file(filepath, 'plain', format='md')
-        elif filepath.endswith(".pdf"):
-            # PDF handling using PyMuPDF
-            doc = fitz.open(filepath)
-            text = ""
-            for page in doc:
-                text += page.get_text()
-            return text
-        elif filepath.endswith(".docx"):
-            # DOCX handling using python-docx
-            doc = Document(filepath)
-            return "\n".join([p.text for p in doc.paragraphs])
-        elif filepath.endswith(".html"):
-            # HTML handling using BeautifulSoup
-            with open(filepath, 'r', encoding='utf-8') as f:
-                soup = BeautifulSoup(f, 'html.parser')
-                return soup.get_text()
-        else:
-            # Plain text
-            with open(filepath, 'r', encoding='utf-8') as f:
-                return f.read()
+# Function to delete a file
+def delete_file(filename):
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{filename}'
+    response = github_request("GET", url)
+    if not response or response.status_code != 200:
+        return False
+    
+    sha = response.json().get('sha')
+    data = {
+        "message": f"Delete {filename}",
+        "sha": sha
+    }
+    delete_response = github_request("DELETE", url, data)
+    return delete_response and delete_response.status_code == 200
 
-    def show_diff(self):
-        # Get texts from inputs
-        text1 = self.text_input1.toPlainText()
-        text2 = self.text_input2.toPlainText()
+# Function to list files
+def list_files():
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents'
+    response = github_request("GET", url)
+    if response and response.status_code == 200:
+        return [item['name'] for item in response.json()]
+    else:
+        return None
 
-        # Generate diff
-        diff = difflib.HtmlDiff().make_file(
-            text1.splitlines(), text2.splitlines(), context=True, numlines=2
-        )
+# Split text into parts if it exceeds Telegram's message limit
+def split_text(text, max_length=4000):
+    return [text[i:i + max_length] for i in range(0, len(text), max_length)]
 
-        # Display diff in HTML format
-        self.diff_view.setHtml(diff)
-
-# Application initialization
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    viewer = DiffViewer()
-    viewer.show()
-    sys.exit(app.exec_())
-```
+# Send long messages by splitting them into parts
+async def send_long_message(update, text):
+    parts = split_text(text)
+    for part in parts:
+        await update.message.reply_text(part)
