@@ -10,7 +10,7 @@ sudo nano /etc/netplan/01-netcfg.yaml
 Eslatma: Fayl nomi tizimda boshqacha bo‘lishi mumkin. **`/etc/netplan/`** ichidagi barcha fayllarni tekshirib ko‘ring va mos faylni tahrirlang.
 
 2. IP konfiguratsiyasini sozlash
-Faylni ochganingizdan so‘ng, tarmoq interfeysining (masalan, ens33 yoki eth0) IP sozlamalarini quyidagi tarzda o‘zgartiring. Interfeys nomini to‘g‘ri tanlang — buni ip a yoki ifconfig buyruqlari yordamida bilib olishingiz mumkin.
+Faylni ochganingizdan so‘ng, tarmoq interfeysining (masalan, ens33 yoki eth0) IP sozlamalarini quyidagi tarzda o‘zgartiring. Interfeys nomini to‘g‘ri tanlang — buni **ip a** yoki **ifconfig** buyruqlari yordamida bilib olishingiz mumkin.
 
 Ushbu konfiguratsiyani .yaml fayliga kiriting:
 
@@ -30,10 +30,10 @@ network:
 ```
 Izohlar:
 
- - dhcp4: no — bu qator statik IP-manzil qo‘llanayotganini bildiradi.
- - addresses — IP manzil va subnet maskni ko‘rsatadi (192.168.1.196/24).
- - gateway4 — asosiy shlyuzni belgilash uchun ishlatiladi.
- - nameservers — DNS server manzillarini ko‘rsatadi (Google DNS: 8.8.8.8, Cloudflare DNS: 1.1.1.1).
+ - **`dhcp4`**: no — bu qator statik IP-manzil qo‘llanayotganini bildiradi.
+ - **`addresses`** — IP manzil va subnet maskni ko‘rsatadi (192.168.1.196/24).
+ - **`gateway4`** — asosiy shlyuzni belgilash uchun ishlatiladi.
+ - **`nameservers`** — DNS server manzillarini ko‘rsatadi (Google DNS: 8.8.8.8, Cloudflare DNS: 1.1.1.1).
 3. O‘zgartirishlarni saqlash va amalga oshirish
 Faylga o‘zgartirishlarni kiritganingizdan so‘ng, Ctrl + O tugmasi bilan saqlang va Ctrl + X bilan fayldan chiqing.
 
