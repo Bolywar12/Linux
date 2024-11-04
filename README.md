@@ -15,7 +15,6 @@ Faylni ochganingizdan so‘ng, tarmoq interfeysining (masalan, ens33 yoki eth0) 
 Ushbu konfiguratsiyani .yaml fayliga kiriting:
 
 ```yaml
-Копировать код
 network:
   version: 2
   ethernets:
