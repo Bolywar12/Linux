@@ -7,7 +7,7 @@ Netplan konfiguratsiya fayllari odatda /etc/netplan/ papkasida joylashgan bo‘l
 ```bash
 sudo nano /etc/netplan/01-netcfg.yaml
 ```
-Eslatma: Fayl nomi tizimda boshqacha bo‘lishi mumkin. /etc/netplan/ ichidagi barcha fayllarni tekshirib ko‘ring va mos faylni tahrirlang.
+Eslatma: Fayl nomi tizimda boshqacha bo‘lishi mumkin. **`/etc/netplan/`** ichidagi barcha fayllarni tekshirib ko‘ring va mos faylni tahrirlang.
 
 2. IP konfiguratsiyasini sozlash
 Faylni ochganingizdan so‘ng, tarmoq interfeysining (masalan, ens33 yoki eth0) IP sozlamalarini quyidagi tarzda o‘zgartiring. Interfeys nomini to‘g‘ri tanlang — buni ip a yoki ifconfig buyruqlari yordamida bilib olishingiz mumkin.
