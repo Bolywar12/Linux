@@ -1,4 +1,4 @@
-## Netplan yordamida IP manzilni o‘zgartirish hozirgi zamonaviy Linux tizimlarida eng samarali usullardan biri bo‘lib, u statik yoki dinamik IP-manzillarni boshqarish uchun foydalaniladi. Bu usulni qo‘llashda quyidagi qadamlarni bajarishingiz kerak:
+### Netplan yordamida IP manzilni o‘zgartirish hozirgi zamonaviy Linux tizimlarida eng samarali usullardan biri bo‘lib, u statik yoki dinamik IP-manzillarni boshqarish uchun foydalaniladi. Bu usulni qo‘llashda quyidagi qadamlarni bajarishingiz kerak:
 
 Qadamlar
 1. netplan konfiguratsiya faylini tahrirlash
