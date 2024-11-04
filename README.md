@@ -50,7 +50,7 @@ ip a
 ```
 
 ---
-# Yakuniy Eslatmalar
+## Yakuniy Eslatmalar
 Agar xatolik yuz bersa, yaml faylidagi bo‘sh joylar yoki qatorlarni tekshiring, chunki yaml format juda aniq bo‘sh joylarga bog‘liq.
 Statik IP-manzil konfiguratsiyasi tizim qayta ishga tushirilganda ham saqlanib qoladi.
 
