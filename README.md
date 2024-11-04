@@ -30,10 +30,10 @@ network:
 ```
 Izohlar:
 
-dhcp4: no — bu qator statik IP-manzil qo‘llanayotganini bildiradi.
-addresses — IP manzil va subnet maskni ko‘rsatadi (192.168.1.196/24).
-gateway4 — asosiy shlyuzni belgilash uchun ishlatiladi.
-nameservers — DNS server manzillarini ko‘rsatadi (Google DNS: 8.8.8.8, Cloudflare DNS: 1.1.1.1).
+ - dhcp4: no — bu qator statik IP-manzil qo‘llanayotganini bildiradi.
+ - addresses — IP manzil va subnet maskni ko‘rsatadi (192.168.1.196/24).
+ - gateway4 — asosiy shlyuzni belgilash uchun ishlatiladi.
+ - nameservers — DNS server manzillarini ko‘rsatadi (Google DNS: 8.8.8.8, Cloudflare DNS: 1.1.1.1).
 3. O‘zgartirishlarni saqlash va amalga oshirish
 Faylga o‘zgartirishlarni kiritganingizdan so‘ng, Ctrl + O tugmasi bilan saqlang va Ctrl + X bilan fayldan chiqing.
 
