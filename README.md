@@ -4,9 +4,9 @@ Qadamlar
 1. netplan konfiguratsiya faylini tahrirlash
 Netplan konfiguratsiya fayllari odatda /etc/netplan/ papkasida joylashgan bo‘ladi. Bu papkada bir yoki bir nechta .yaml kengaytmali fayl bo‘ladi, masalan: 01-netcfg.yaml. Ushbu faylni tahrirlash uchun quyidagi buyruqdan foydalanishingiz mumkin:
 
-bash
-Копировать код
+```bash
 sudo nano /etc/netplan/01-netcfg.yaml
+```
 Eslatma: Fayl nomi tizimda boshqacha bo‘lishi mumkin. /etc/netplan/ ichidagi barcha fayllarni tekshirib ko‘ring va mos faylni tahrirlang.
 
 2. IP konfiguratsiyasini sozlash
@@ -39,15 +39,15 @@ Faylga o‘zgartirishlarni kiritganingizdan so‘ng, Ctrl + O tugmasi bilan saql
 
 Keyin, netplan apply buyrug‘i bilan o‘zgartirishlarni qo‘llang:
 
-bash
-Копировать код
+```bash
 sudo netplan apply
+```
 4. IP manzilni tekshirish
 ip a yoki ifconfig buyrug‘ini ishlatib, yangi IP manzil muvaffaqiyatli o‘zgarganini tekshiring:
 
-bash
-Копировать код
+```bash
 ip a
+```
 Yakuniy Eslatmalar
 Agar xatolik yuz bersa, yaml faylidagi bo‘sh joylar yoki qatorlarni tekshiring, chunki yaml format juda aniq bo‘sh joylarga bog‘liq.
 Statik IP-manzil konfiguratsiyasi tizim qayta ishga tushirilganda ham saqlanib qoladi.
