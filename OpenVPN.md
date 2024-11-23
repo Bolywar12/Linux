@@ -52,3 +52,75 @@ Bu o'rnatilgan serverni standart sozlamalarga qaytaradi.
 ---
 
 Agar boshqa muammo yoki xato paydo bo'lsa, shu yerdan loglarni ko'rsatishingiz mumkin. Yordamni davom ettiraman!
+
+---
+
+To completely uninstall OpenVPN Access Server from your server, you can follow these steps. Please note that these instructions are for a typical Linux server (like Ubuntu, CentOS, or Debian) where OpenVPN Access Server is installed. 
+
+### Step 1: Stop the OpenVPN Access Server Services
+First, stop the OpenVPN services to ensure they’re not running during uninstallation.
+
+```bash
+sudo systemctl stop openvpnas
+```
+
+Or, if your system uses a different init system:
+
+```bash
+sudo service openvpnas stop
+```
+
+### Step 2: Uninstall OpenVPN Access Server
+To remove the OpenVPN Access Server package, use the appropriate package manager for your operating system:
+
+- **For Ubuntu/Debian**:
+
+  ```bash
+  sudo apt-get remove --purge openvpn-as
+  ```
+
+- **For CentOS/RHEL**:
+
+  ```bash
+  sudo yum remove openvpn-as
+  ```
+
+This command will uninstall the OpenVPN Access Server package. The `--purge` option on Ubuntu/Debian ensures that all configuration files associated with the package are removed.
+
+### Step 3: Remove Configuration and Data Files
+After uninstalling the package, there might still be residual configuration files and directories on your server. To ensure a complete cleanup, manually delete these files:
+
+```bash
+sudo rm -rf /usr/local/openvpn_as
+sudo rm -rf /var/lib/openvpn
+sudo rm -rf /etc/openvpn
+sudo rm -rf /var/log/openvpnas
+```
+
+These commands remove the main OpenVPN Access Server directories and logs. **Be cautious** when running these commands, as they permanently delete these directories and files.
+
+### Step 4: Remove Users (Optional)
+If you had created specific users for OpenVPN Access Server, you might want to delete those users as well:
+
+```bash
+sudo userdel openvpn
+```
+
+### Step 5: Verify Removal
+Check that the OpenVPN Access Server is no longer listed in running services:
+
+```bash
+sudo systemctl status openvpnas
+```
+
+If the output indicates that the service is not found, then the removal was successful.
+
+### Step 6: Reboot the Server (Optional)
+To ensure all services and settings are reset, you might want to reboot the server:
+
+```bash
+sudo reboot
+```
+
+### Summary
+These steps should completely remove OpenVPN Access Server from your machine. If you plan to reinstall or switch to a different VPN solution, your server should now be clean and ready for a new setup.
