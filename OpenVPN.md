@@ -51,5 +51,3 @@ Bu o'rnatilgan serverni standart sozlamalarga qaytaradi.
 
 ---
 
-Agar boshqa muammo yoki xato paydo bo'lsa, shu yerdan loglarni ko'rsatishingiz mumkin. Yordamni davom ettiraman!
-
