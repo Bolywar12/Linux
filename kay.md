@@ -1,3 +1,4 @@
+pip install -r requirements.txt
 Agar sizda **Python 3.12** allaqachon o'rnatilgan bo'lsa va uni saqlab qolishni xohlasangiz, siz Python 3.10 yoki 3.11-ni qo'shimcha sifatida o'rnatishingiz va ulardan mos ravishda foydalanishingiz mumkin. Quyida Python versiyalarini yo'qotmasdan bir necha versiyani birgalikda ishlatish bo'yicha qadamlar keltirilgan:
 
 ---
