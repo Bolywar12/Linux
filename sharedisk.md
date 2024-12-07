@@ -1,3 +1,99 @@
+Sizning `lsblk` natijalaringizni tahlil qilib ko'ramiz. Hozirda disk quyidagicha ajratilgan:
+
+- **`sda1`**: 1GB (EFI bo'limi, boot uchun ishlatiladi).
+- **`sda2`**: 2GB (`/boot` bo'limi).
+- **`sda3`**: 928.5GB (`lvm` sifatida ishlatilgan, faqat bir qismi – 100GB – Ubuntu tizimi uchun ajratilgan).
+
+Sizning maqsadingiz – qolgan 828.5GB joyni Windows tarmoq diski sifatida ulash. Buning uchun quyidagilarni amalga oshirasiz:
+
+---
+
+### 1. **LVM bo'sh joyni ajratish**
+LVM tizimidan foydalanilayotganligi sababli, qolgan joyni LVM'dan ajratib, alohida disk sifatida sozlashingiz kerak bo'ladi.
+
+#### a) Bo'sh joyni tekshirish
+Avvalo, LVM tarkibida bo'sh joy borligini tasdiqlang:
+```bash
+sudo lvdisplay
+```
+
+#### b) Bo'sh joyni yangi bo'limga ajratish
+1. **Yangi Logical Volume (LV) yaratish**:
+   ```bash
+   sudo lvcreate -L 828G -n shared ubuntu-vg
+   ```
+   Bu yerda:
+   - `-L 828G` – yangi LV uchun 828GB joy ajratiladi.
+   - `-n shared` – yangi LV nomi `shared` deb belgilanadi.
+
+2. **Fayl tizimini o'rnatish**:
+   Yangi bo'limni `ext4` formatida sozlang:
+   ```bash
+   sudo mkfs.ext4 /dev/ubuntu-vg/shared
+   ```
+
+3. **Bo'limni ulash**:
+   Yangi bo'limni ulash uchun katalog yarating va ulashing:
+   ```bash
+   sudo mkdir /mnt/shared
+   sudo mount /dev/ubuntu-vg/shared /mnt/shared
+   ```
+
+4. **Avtomatik ulanishni sozlash**:
+   `/etc/fstab` fayliga yozing:
+   ```plaintext
+   /dev/ubuntu-vg/shared /mnt/shared ext4 defaults 0 0
+   ```
+
+---
+
+### 2. **Tarmoq bo'limini ulash (Windows uchun Samba)**
+Diskni Windows tarmoq diski sifatida ulash uchun Samba xizmatidan foydalaning:
+
+#### a) Sambani o'rnating
+```bash
+sudo apt update
+sudo apt install samba
+```
+
+#### b) Samba sozlamalari
+1. Samba konfiguratsiya faylini oching:
+   ```bash
+   sudo nano /etc/samba/smb.conf
+   ```
+
+2. Fayl oxiriga quyidagilarni qo'shing:
+   ```ini
+   [SharedDisk]
+   path = /mnt/shared
+   browsable = yes
+   writable = yes
+   guest ok = yes
+   create mask = 0755
+   ```
+
+3. Samba xizmatini qayta ishga tushiring:
+   ```bash
+   sudo systemctl restart smbd
+   ```
+
+---
+
+### 3. **Windows'dan ulanish**
+1. Windows tizimida "This PC"ni oching va "Map Network Drive" tugmasini bosing.
+2. Tarmoq yo'lini kiriting:
+   ```plaintext
+   \\<server-ip>\SharedDisk
+   ```
+   Bu yerda `<server-ip>` – serveringizning IP manzili.
+
+---
+
+Agar qo'shimcha savollaringiz bo'lsa, yozib qoldiring! 😊
+
+---
+
+
 Bu xatolik Samba orqali ulashgan papkangizda ruxsat masalasi tufayli yuzaga kelgan. Windows tarmoq orqali papkaga ulana olishi uchun o'sha papka va uning tarkibidagi fayllar uchun kerakli ruxsatlarni sozlash kerak. Quyida bu muammoni hal qilish uchun bosqichma-bosqich ko'rsatmalar berilgan:
 
 ---
