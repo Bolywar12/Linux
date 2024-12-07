@@ -261,6 +261,95 @@ Agar bir nechta foydalanuvchi ulanishi kerak bo'lsa:
 
 ---
 
-Agar yana qo'shimcha yordam kerak bo'lsa, bemalol so'rang! 😊
+Ha, 700GB bo'limni qayta nomlash yoki to'g'ri ulash mumkin. Bundan tashqari, hozirgi bo'lim konfiguratsiyasini to'g'ri o'rnatish uchun kerakli sozlashlarni bajarishingiz mumkin. Quyidagi bosqichlar bilan davom eting:
+
+---
+
+### 1. **700GB bo'limni qayta ulash va qayta nomlash**
+Bo'limni to'g'ri ulash va uning yangi nomini belgilash uchun quyidagilarni bajaring:
+
+#### Bo'limni ajratish
+Avval noto'g'ri ulangan bo'limni ajrating:
+```bash
+sudo umount /mnt/shared
+```
+
+#### Yangi ulash nuqtasini yaratish
+700GB bo'lim uchun yangi ulash nuqtasi yarating:
+```bash
+sudo mkdir /mnt/shared700
+```
+
+#### Bo'limni yangi ulash nuqtasiga ulash
+700GB bo'limni yangi ulash joyiga ulang:
+```bash
+sudo mount /dev/mapper/ubuntu--vg-shared /mnt/shared700
+```
+
+Bo'limni ulash muvaffaqiyatli bo'lganligini tekshirish uchun:
+```bash
+df -h
+```
+Bu sizga `/mnt/shared700` joyida 700GB hajmni ko'rsatadi.
+
+#### Avtomatik ulashni sozlash
+Bo'limni har safar tizim qayta yuklanganda avtomatik ulash uchun `/etc/fstab` faylini tahrirlang:
+```bash
+sudo nano /etc/fstab
+```
+
+Fayl oxiriga quyidagilarni qo'shing:
+```
+/dev/mapper/ubuntu--vg-shared /mnt/shared700 ext4 defaults 0 2
+```
+
+So'ngra, o'zgarishlarni saqlash va chiqish uchun `Ctrl+O` va `Ctrl+X` tugmalarini bosing. Yangi sozlamani qo'llash uchun:
+```bash
+sudo mount -a
+```
+
+---
+
+### 2. **100GB bo'limni Windows uchun tarmoq ulashiga sozlash**
+Ehtimol siz noto'g'ri `100GB` bo'limni ulagan bo'lishingiz mumkin (`/dev/mapper/ubuntu--vg-ubuntu--lv`). Bu bo'limning tarmoq ulanishini uzish va 700GB bo'limni ulash uchun Samba sozlamalarini yangilang:
+
+#### Samba sozlamasini yangilash
+`/etc/samba/smb.conf` faylini tahrirlang:
+```bash
+sudo nano /etc/samba/smb.conf
+```
+
+`[SharedDisk]` bo'limida `path` o'zgaruvchisini to'g'ri yo'lga o'zgartiring:
+```ini
+[SharedDisk]
+path = /mnt/shared700
+browsable = yes
+read only = no
+guest ok = yes
+force user = nobody
+create mask = 0777
+directory mask = 0777
+```
+
+So'ngra Samba xizmatini qayta ishga tushiring:
+```bash
+sudo systemctl restart smbd
+```
+
+---
+
+### 3. **Windows ulanishini yangilash**
+Windows kompyuterda avvalgi tarmoq diskini uzing va yangi 700GB bo'limga ulaning:
+1. Tarmoq diskini uzing.
+2. Yangi manzilni kiriting:  
+   ```
+   \\<Ubuntu_server_IP>\SharedDisk
+   ```
+
+Endi 700GB hajmdagi bo'limni ko'rishingiz kerak.
+
+---
+
+Agar shunday qilganingizdan keyin ham noto'g'ri hajm aks etsa, qaysi bo'limni ulayotganingizni yana bir marta tekshiring. Har qanday muammolarga duch kelsangiz, xabar bering!
 
 
