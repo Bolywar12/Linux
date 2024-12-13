@@ -113,3 +113,148 @@ journalctl -u pingbot.service
 - **Xavfsizlik**: API kalitlarini va boshqa maxfiy ma'lumotlarni kod ichida saqlash o'rniga `.env` fayliga joylashtiring va `python-dotenv` kutubxonasidan foydalaning.
   
 Bu jarayonni to'liq amalga oshirish orqali botingiz muvaffaqiyatli ishlashi kerak. Agar muammo yuzaga kelsa, xabar bering, yordam beraman!
+
+---
+
+## Qo'shimcha ravishda 2ta service qo'shildi
+
+Agar botingiz virtual muhit (`venv`) ichida ishlayotgan bo'lsa, bu juda yaxshi, chunki u Python kutubxonalarini izolyatsiya qilish imkonini beradi. Ammo `venv` dan foydalanayotganingizda, `systemd` xizmat konfiguratsiyasini to'g'ri sozlash muhimdir.
+
+Quyida botni `venv` muhitida ishlatish uchun to'liq tavsiyalar va xizmat konfiguratsiyasi berilgan.
+
+---
+
+### **1. `venv` sozlamalari**
+Bot dasturingiz uchun `venv` yaratish va kutubxonalarni o'rnatishni eslatib o'taman:
+
+```bash
+cd /home/bolywar/pingbot/
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+- `pingbot6.py` faylingiz joylashgan katalog: `/home/bolywar/pingbot/`
+- Virtual muhit direktoriyasi: `/home/bolywar/pingbot/venv/`
+
+---
+
+### **2. `systemd` Xizmat Fayli**
+Bu xizmat botni `venv` muhitida ishga tushirish uchun sozlangan:
+
+Fayl: `/etc/systemd/system/telegram-bot.service`
+
+```ini
+[Unit]
+Description=Telegram Bot Service
+After=network.target
+
+[Service]
+Type=simple
+# Ishlaydigan katalogni ko'rsatamiz
+WorkingDirectory=/home/bolywar/pingbot/
+# `venv` muhitida botni ishga tushiramiz
+ExecStart=/home/bolywar/pingbot/venv/bin/python3 /home/bolywar/pingbot/pingbot6.py
+# Xatolik bo'lsa, qayta ishga tushadi
+Restart=on-failure
+RestartSec=5
+# Xizmatni qaysi foydalanuvchi ishga tushirishi
+User=bolywar
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+### **3. Yoqilish va O'chish Hodisalari Xizmatlari**
+Yuqorida berilgan xizmat fayllarini `venv` bilan moslashtiramiz:
+
+#### Yoqilish Xizmati
+Fayl: `/etc/systemd/system/startup-event.service`
+
+```ini
+[Unit]
+Description=Server yoqilishida Telegram botga hodisa yuborish
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/bolywar/pingbot/
+ExecStart=/home/bolywar/pingbot/venv/bin/python3 /home/bolywar/pingbot/pingbot6.py --log-event "Server yoqildi"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### O'chish Xizmati
+Fayl: `/etc/systemd/system/shutdown-event.service`
+
+```ini
+[Unit]
+Description=Server o'chirilayotganda Telegram botga hodisa yuborish
+DefaultDependencies=no
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/bolywar/pingbot/
+ExecStart=/home/bolywar/pingbot/venv/bin/python3 /home/bolywar/pingbot/pingbot6.py --log-event "Server o‘chirildi"
+
+[Install]
+WantedBy=halt.target reboot.target
+```
+
+---
+
+### **4. Xizmatlarni Yoqish**
+Yuqoridagi fayllarni yaratgandan so'ng, quyidagi buyruqlar bilan xizmatlarni yoqing va ishga tushiring:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable telegram-bot.service
+sudo systemctl enable startup-event.service
+sudo systemctl enable shutdown-event.service
+
+sudo systemctl start telegram-bot.service
+```
+
+---
+
+### **5. Tekshirish**
+Xizmatlarning holatini tekshirish uchun:
+
+- **Telegram bot xizmati**:
+  ```bash
+  sudo systemctl status telegram-bot.service
+  ```
+
+- **Yoqilish hodisasi xizmati**:
+  ```bash
+  sudo systemctl status startup-event.service
+  ```
+
+- **O'chish hodisasi xizmati**:
+  ```bash
+  sudo systemctl status shutdown-event.service
+  ```
+
+---
+
+### **6. Maslahat**
+1. **Loglarni kuzatish**: Agar xizmatlar ishlamasa, loglarni tekshirish uchun quyidagi buyruqdan foydalaning:
+   ```bash
+   sudo journalctl -u telegram-bot.service
+   sudo journalctl -u startup-event.service
+   sudo journalctl -u shutdown-event.service
+   ```
+
+2. **Virtul muhitga kirish**: Xizmat ishlashi uchun virtual muhit (`venv`) to'g'ri ishlashiga ishonch hosil qiling:
+   ```bash
+   source /home/bolywar/pingbot/venv/bin/activate
+   python /home/bolywar/pingbot/pingbot6.py
+   ```
+
+---
+
+Ushbu sozlamalar botni `venv` muhitida ishlatishga to'liq tayyor qiladi. Agar qo'shimcha savollaringiz bo'lsa, bemalol so'rashingiz mumkin!
