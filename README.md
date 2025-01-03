@@ -22,7 +22,9 @@ network:
       dhcp4: no
       addresses:
         - 192.168.1.196/24
-      gateway4: 192.168.1.246
+      routes:
+        - to: 0.0.0.0/0
+          via: 192.168.1.246
       nameservers:
         addresses:
           - 8.8.8.8
@@ -32,7 +34,6 @@ Izohlar:
 
  - **`dhcp4`**: no — bu qator statik IP-manzil qo‘llanayotganini bildiradi.
  - **`addresses`** — IP manzil va subnet maskni ko‘rsatadi (192.168.1.196/24).
- - **`gateway4`** — asosiy shlyuzni belgilash uchun ishlatiladi.
  - **`nameservers`** — DNS server manzillarini ko‘rsatadi (Google DNS: 8.8.8.8, Cloudflare DNS: 1.1.1.1).
 3. O‘zgartirishlarni saqlash va amalga oshirish
 Faylga o‘zgartirishlarni kiritganingizdan so‘ng, Ctrl + O tugmasi bilan saqlang va Ctrl + X bilan fayldan chiqing.
@@ -54,25 +55,6 @@ ip a
 Agar xatolik yuz bersa, yaml faylidagi bo‘sh joylar yoki qatorlarni tekshiring, chunki yaml format juda aniq bo‘sh joylarga bog‘liq.
 Statik IP-manzil konfiguratsiyasi tizim qayta ishga tushirilganda ham saqlanib qoladi.
 
----
-gateway4 muammosiga duch kelsangiz 
-matni tahrirlang 
-```bash
-network:
-  version: 2
-  ethernets:
-    ens33:
-      dhcp4: no
-      addresses:
-        - 192.168.1.196/24
-      routes:
-        - to: 0.0.0.0/0
-          via: 192.168.1.246
-      nameservers:
-        addresses:
-          - 8.8.8.8
-          - 1.1.1.1
-```
 
 
 
